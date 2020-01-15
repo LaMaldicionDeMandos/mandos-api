@@ -10,6 +10,14 @@ spring:
 #DEV CONFIGURATION
 spring:
   profiles: dev
+  data:
+    mongodb:
+      #authentication-database=admin
+      #username=root
+      #password=root
+      database: mandos
+      port: 27017
+      host: localhost
 #  jpa:
 #    database-platform: org.hibernate.dialect.H2Dialect
 #    show-sql: true
@@ -22,6 +30,7 @@ spring:
 #PROD CONFIGURATION
 spring:
   profiles: prod
+  spring.data.mongodb.uri = $MONGOLAB_URI
 #  jpa:
 #    database-platform: org.hibernate.dialect.H2Dialect
 #    show-sql: true

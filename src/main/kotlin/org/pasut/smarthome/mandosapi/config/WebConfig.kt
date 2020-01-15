@@ -17,7 +17,7 @@ class WebConfig : WebMvcConfigurer {
     }
 
     private val lowerCaseMessageConverter: MappingJackson2HttpMessageConverter
-        private get() {
+        get() {
             val mapper = ObjectMapper()
             mapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
