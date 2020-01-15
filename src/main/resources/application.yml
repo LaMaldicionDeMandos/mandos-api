@@ -30,7 +30,7 @@ spring:
 #PROD CONFIGURATION
 spring:
   profiles: prod
-  spring.data.mongodb.uri = $MONGOLAB_URI
+  data.mongodb.uri: ${MONGODB_URI}?retryWrites=false
 #  jpa:
 #    database-platform: org.hibernate.dialect.H2Dialect
 #    show-sql: true
