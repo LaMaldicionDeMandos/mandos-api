@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.websocket.server.PathParam
 
 @RestController
 @CrossOrigin(origins = ["*"])
@@ -21,5 +22,25 @@ class ShoppingListController(private val shoppingListService: ShoppingListServic
     fun newItem(@RequestBody item:ShoppingListItem):ResponseEntity<ShoppingListItem> {
         LOG.info("Nuevo item {}", item.name)
         return ResponseEntity.status(HttpStatus.CREATED).body(shoppingListService.newItem(item))
+    }
+
+    @GetMapping
+    fun list():ResponseEntity<Collection<ShoppingListItem>> {
+        LOG.info("list")
+        return ResponseEntity.ok(shoppingListService.list())
+    }
+
+    @DeleteMapping
+    fun clear():ResponseEntity<Void> {
+        LOG.info("clear")
+        shoppingListService.clear();
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("{name}")
+    fun removeItem(@PathVariable name: String):ResponseEntity<Any> {
+        LOG.info("remove {}", name)
+        val item = shoppingListService.delete(name)
+        return ResponseEntity.ok(item!!)
     }
 }
