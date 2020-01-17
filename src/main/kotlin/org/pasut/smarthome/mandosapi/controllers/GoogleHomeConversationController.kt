@@ -3,6 +3,7 @@ package org.pasut.smarthome.mandosapi.controllers
 import com.google.actions.api.*
 import org.pasut.smarthome.mandosapi.model.ShoppingListItem
 import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
+import org.pasut.smarthome.mandosapi.processors.DeleteItemProcessor
 import org.pasut.smarthome.mandosapi.processors.ShowShippingListProcessor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,7 +18,8 @@ import java.util.concurrent.ExecutionException
 
 @RestController
 class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProcessor,
-                                       private val showShoppingListProcessor: ShowShippingListProcessor) : DialogflowApp() {
+                                       private val showShoppingListProcessor: ShowShippingListProcessor,
+                                       private val deleteItemProcessor: DeleteItemProcessor) : DialogflowApp() {
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(GoogleHomeConversationController::class.java)
     }
@@ -54,6 +56,20 @@ class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProc
         val actionResponse = responseBuilder.build()
         LOG.info("Response: {}", actionResponse.toString())
         LOG.info("buy item end.")
+        return actionResponse
+    }
+
+    @ForIntent("delete item")
+    fun deleteItem(request: ActionRequest): ActionResponse? {
+        LOG.info("delete item start.")
+
+        val itemName = request.getParameter("item").toString()
+        val response = deleteItemProcessor.process(itemName)
+
+        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
+        val actionResponse = responseBuilder.build()
+        LOG.info("Response: {}", actionResponse.toString())
+        LOG.info("delete item end.")
         return actionResponse
     }
 }
