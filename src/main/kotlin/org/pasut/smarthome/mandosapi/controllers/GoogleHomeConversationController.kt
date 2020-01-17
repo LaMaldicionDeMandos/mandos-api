@@ -1,6 +1,7 @@
 package org.pasut.smarthome.mandosapi.controllers
 
 import com.google.actions.api.*
+import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -13,7 +14,7 @@ import java.util.concurrent.ExecutionException
 
 
 @RestController
-class GoogleHomeConversationController : DialogflowApp() {
+class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProcessor) : DialogflowApp() {
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(GoogleHomeConversationController::class.java)
     }
@@ -31,8 +32,9 @@ class GoogleHomeConversationController : DialogflowApp() {
     fun buyItem(request: ActionRequest): ActionResponse? {
         LOG.info("buy item start.")
 
-        val item = request.getParameter("item").toString()
-        val response = "ok, se agregó $item a la lista de compras"
+        val itemName = request.getParameter("item").toString()
+        val item = buyItemProcessor.process(itemName)
+        val response = "ok, se agregó $item.name a la lista de compras"
         val responseBuilder = getResponseBuilder(request).add(response).endConversation()
         val actionResponse = responseBuilder.build()
         LOG.info("Response: {}", actionResponse.toString())
