@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component
 class DeleteItemProcessor(private val service:ShoppingListService) {
     fun process(itemName: String):String {
         val item = service.delete(itemName)
-        return "ok, se sacó de la lista ${item}."
+        return if (item == null) "No encontré el item ${itemName}." else "ok, se sacó de la lista ${item.name}."
     }
 }
