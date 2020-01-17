@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component
 class ClearShoppingListProcessor(private val service:ShoppingListService) {
     fun process():String {
         service.clear()
-        return "ok, se vacio la lista de compras"
+        return "ok, se vacío la lista de compras"
     }
 }
