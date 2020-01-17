@@ -1,10 +1,10 @@
 package org.pasut.smarthome.mandosapi.controllers
 
 import com.google.actions.api.*
-import org.pasut.smarthome.mandosapi.model.ShoppingListItem
 import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
+import org.pasut.smarthome.mandosapi.processors.ClearShoppingListProcessor
 import org.pasut.smarthome.mandosapi.processors.DeleteItemProcessor
-import org.pasut.smarthome.mandosapi.processors.ShowShippingListProcessor
+import org.pasut.smarthome.mandosapi.processors.ShowShoppingListProcessor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -18,7 +18,8 @@ import java.util.concurrent.ExecutionException
 
 @RestController
 class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProcessor,
-                                       private val showShoppingListProcessor: ShowShippingListProcessor,
+                                       private val showShoppingListProcessor: ShowShoppingListProcessor,
+                                       private val clearShoppingListProcessor: ClearShoppingListProcessor,
                                        private val deleteItemProcessor: DeleteItemProcessor) : DialogflowApp() {
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(GoogleHomeConversationController::class.java)
@@ -70,6 +71,18 @@ class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProc
         val actionResponse = responseBuilder.build()
         LOG.info("Response: {}", actionResponse.toString())
         LOG.info("delete item end.")
+        return actionResponse
+    }
+
+    @ForIntent("clear shopping list")
+    fun clearShoppingList(request: ActionRequest): ActionResponse? {
+        LOG.info("clear shopping list start.")
+
+        val response = clearShoppingListProcessor.process()
+        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
+        val actionResponse = responseBuilder.build()
+        LOG.info("Response: {}", actionResponse.toString())
+        LOG.info("clear shopping list end.")
         return actionResponse
     }
 }

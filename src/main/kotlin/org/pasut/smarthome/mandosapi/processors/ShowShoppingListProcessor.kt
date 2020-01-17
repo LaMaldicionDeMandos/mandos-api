@@ -5,7 +5,7 @@ import org.pasut.smarthome.mandosapi.services.ShoppingListService
 import org.springframework.stereotype.Component
 
 @Component
-class ShowShippingListProcessor(private val service:ShoppingListService) {
+class ShowShoppingListProcessor(private val service:ShoppingListService) {
     fun process():String {
         val items = service.list()
         var response = "<speak>Ok, tu lista de compras <seq>"
