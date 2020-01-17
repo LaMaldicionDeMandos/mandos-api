@@ -34,7 +34,7 @@ class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProc
 
         val itemName = request.getParameter("item").toString()
         val item = buyItemProcessor.process(itemName)
-        val response = "ok, se agregó $item.name a la lista de compras"
+        val response = "ok, se agregó ${item.name} a la lista de compras"
         val responseBuilder = getResponseBuilder(request).add(response).endConversation()
         val actionResponse = responseBuilder.build()
         LOG.info("Response: {}", actionResponse.toString())
