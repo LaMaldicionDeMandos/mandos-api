@@ -6,5 +6,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class BuyItemProcessor(private val service:ShoppingListService) {
-    val process = { itemName: String -> service.newItem(ShoppingListItem(name = itemName))}
+    fun process(itemName: String):String {
+        val item = service.newItem(ShoppingListItem(name = itemName))
+        return "ok, se agregó ${item.name} a la lista de compras"
+    }
 }
