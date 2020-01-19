@@ -1,13 +1,13 @@
 package org.pasut.smarthome.mandosapi.controllers
 
 import com.google.actions.api.*
+import org.json.JSONObject
 import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
 import org.pasut.smarthome.mandosapi.processors.ClearShoppingListProcessor
 import org.pasut.smarthome.mandosapi.processors.DeleteItemProcessor
 import org.pasut.smarthome.mandosapi.processors.ShowShoppingListProcessor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -27,11 +27,47 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
 
     @PostMapping("conversation/alexa")
     @Throws(ExecutionException::class, InterruptedException::class)
-    fun onPost(@RequestBody body: String?, @RequestHeader headers: Map<String?, String?>?): ResponseEntity<String?>? {
+    fun onPost(@RequestBody body: Map<String, Object>, @RequestHeader headers: Map<String?, String?>?): ResponseEntity<String?>? {
         LOG.info("Entrando al post --> Body: {} --> headers: {}", body, headers)
-        val response = handleRequest(body, headers).get()
-        LOG.info("Response: {}", response)
-        return ResponseEntity(response, HttpStatus.OK)
+        LOG.info("Version: {}", body.get("version"));
+
+        val request = body.get("request") as Map<String, String>;
+        val requestType = request.get("type");
+
+        var result: MutableMap<String, Object> = mutableMapOf();
+        result.put("version", body.get("version")!!);
+        var response: MutableMap<String, Object> = mutableMapOf();
+        var speech: MutableMap<String, String> = mutableMapOf();
+        speech.put("type", "PlainText");
+
+        response.put("shouldEndSession", true as Object);
+        speech.put("text", "Mmm no entendí.");
+
+        if (requestType.equals("SessionEndedRequest")) {
+            speech.put("text", "Muy bien, te quiero adioos!");
+            response.put("shouldEndSession", true as Object);
+        }
+
+        if (requestType.equals("LaunchRequest")) {
+            speech.put("text", "¿Que querés hacer?");
+            response.put("shouldEndSession", false as Object);
+        }
+
+        if (requestType.equals("IntentRequest")) {
+            val intent = request.get("intent") as Map<String, String>;
+            if (intent.get("name").equals("get_shopping_list")) {
+                speech.put("text", "Ok, te voy a mostrar la lista");
+                response.put("shouldEndSession", true as Object);
+            }
+        }
+
+        speech.put("playBehavior", "REPLACE_ENQUEUED");
+
+        response.put("outputSpeech", speech as Object);
+
+        result.put("response", response as Object);
+
+        return ResponseEntity.ok(JSONObject(result).toString());
     }
 
     @ForIntent("buy item")
