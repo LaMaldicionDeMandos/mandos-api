@@ -58,6 +58,10 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
                 speech.put("text", showShoppingListProcessor.process());
                 response.put("shouldEndSession", true as Object);
             }
+            if (getIntentName(body).equals("AMAZON.HelpIntent")) {
+                speech.put("text", "No se que decirte, yo tambien necesito ayuda.");
+                response.put("shouldEndSession", false as Object);
+            }
         }
 
         speech.put("playBehavior", "REPLACE_ENQUEUED");
