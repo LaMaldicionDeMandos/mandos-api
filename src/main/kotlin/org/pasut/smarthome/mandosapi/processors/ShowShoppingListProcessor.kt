@@ -10,7 +10,7 @@ class ShowShoppingListProcessor(private val service:ShoppingListService) {
         val items = service.list()
         if (items.isEmpty()) return "La lista de compras está vacía."
         var response = "<speak>Ok, tu lista de compras: "
-        items.forEach { item:ShoppingListItem -> response+= "${item.name},<break time=300ms />" }
+        items.forEach { item:ShoppingListItem -> response+= "${item.name},<break time=\"300ms\" />" }
         return "$response</speak>"
     }
 }
