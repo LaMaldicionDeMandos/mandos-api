@@ -27,15 +27,15 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
 
     @PostMapping("conversation/alexa")
     @Throws(ExecutionException::class, InterruptedException::class)
-    fun onPost(@RequestBody body: Map<String, Object>, @RequestHeader headers: Map<String?, String?>?): ResponseEntity<String?>? {
+    fun onPost(@RequestBody body: Map<String, *>, @RequestHeader headers: Map<String?, String?>?): ResponseEntity<String?>? {
         LOG.info("Entrando al post --> Body: {} --> headers: {}", body, headers)
         LOG.info("Version: {}", body.get("version"));
-
-        val request = body.get("request") as Map<String, String>;
-        val requestType = request.get("type");
+        val version = getRequestVersion(body);
+        val requestType = getRequestType(body);
 
         var result: MutableMap<String, Object> = mutableMapOf();
-        result.put("version", body.get("version")!!);
+        result.put("version", version as Object);
+
         var response: MutableMap<String, Object> = mutableMapOf();
         var speech: MutableMap<String, String> = mutableMapOf();
         speech.put("type", "PlainText");
@@ -54,9 +54,8 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
         }
 
         if (requestType.equals("IntentRequest")) {
-            val intent = request.get("intent") as Map<String, String>;
-            if (intent.get("name").equals("get_shopping_list")) {
-                speech.put("text", "Ok, te voy a mostrar la lista");
+            if (getIntentName(body).equals("get_shopping_list")) {
+                speech.put("text", showShoppingListProcessor.process());
                 response.put("shouldEndSession", true as Object);
             }
         }
@@ -70,55 +69,24 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
         return ResponseEntity.ok(JSONObject(result).toString());
     }
 
-    @ForIntent("buy item")
-    fun buyItem(request: ActionRequest): ActionResponse? {
-        LOG.info("buy item start.")
-
-        val itemName = request.getParameter("item").toString()
-        val response = buyItemProcessor.process(itemName)
-
-        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
-        val actionResponse = responseBuilder.build()
-        LOG.info("Response: {}", actionResponse.toString())
-        LOG.info("buy item end.")
-        return actionResponse
+    private fun getRequest(request: Map<String, *>): Map<String, *> {
+        return request.get("request") as Map<String, *>;
     }
 
-    @ForIntent("show shopping list")
-    fun showShoppingList(request: ActionRequest): ActionResponse? {
-        LOG.info("show shopping list start.")
-
-        val response = showShoppingListProcessor.process()
-        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
-        val actionResponse = responseBuilder.build()
-        LOG.info("Response: {}", actionResponse.toString())
-        LOG.info("buy item end.")
-        return actionResponse
+    private fun getRequestVersion(request: Map<String, *>):String {
+        return request.get("version").toString();
     }
 
-    @ForIntent("delete item")
-    fun deleteItem(request: ActionRequest): ActionResponse? {
-        LOG.info("delete item start.")
-
-        val itemName = request.getParameter("item").toString()
-        val response = deleteItemProcessor.process(itemName)
-
-        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
-        val actionResponse = responseBuilder.build()
-        LOG.info("Response: {}", actionResponse.toString())
-        LOG.info("delete item end.")
-        return actionResponse
+    private fun getRequestType(request: Map<String, *>): String {
+        return getRequest(request).get("type").toString();
     }
 
-    @ForIntent("clear shopping list")
-    fun clearShoppingList(request: ActionRequest): ActionResponse? {
-        LOG.info("clear shopping list start.")
-
-        val response = clearShoppingListProcessor.process()
-        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
-        val actionResponse = responseBuilder.build()
-        LOG.info("Response: {}", actionResponse.toString())
-        LOG.info("clear shopping list end.")
-        return actionResponse
+    private fun getIntent(request: Map<String, *>):Map<String, String> {
+        return getRequest(request).get("intent") as Map<String, String>;
     }
+
+    private fun getIntentName(request: Map<String, *>):String {
+        return getIntent(request).get("name").toString();
+    }
+
 }
