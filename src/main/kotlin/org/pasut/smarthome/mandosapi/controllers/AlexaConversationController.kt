@@ -55,6 +55,7 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
 
         if (requestType.equals("IntentRequest")) {
             if (getIntentName(body).equals("get_shopping_list")) {
+                speech.put("SSML", "PlainText");
                 speech.put("ssml", showShoppingListProcessor.process());
                 response.put("shouldEndSession", true as Object);
             }
