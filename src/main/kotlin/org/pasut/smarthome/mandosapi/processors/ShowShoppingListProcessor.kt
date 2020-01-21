@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 class ShowShoppingListProcessor(private val service:ShoppingListService) {
     fun process():String {
         val items = service.list()
-        if (items.isEmpty()) return "<peak>La lista de compras está vacía.</speak>"
+        if (items.isEmpty()) return "<speak>La lista de compras está vacía.</speak>"
         var response = "<speak>Ok, tu lista de compras: "
         items.forEach { item:ShoppingListItem -> response+= "${item.name},<break time=\"300ms\" />" }
         return "$response</speak>"

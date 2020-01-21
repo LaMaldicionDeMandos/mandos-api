@@ -68,15 +68,15 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
     }
 
     private fun getItem(request: Map<String, *>):String {
-        return getAttribute(request, "item") as String;
+        return getSlot(request, "item") as String;
     }
 
-    private fun getAttribute(request: Map<String, *>, attributeName:String): Any? {
-        return getAttributes(request)[attributeName];
+    private fun getSlot(request: Map<String, *>, attributeName:String): Any? {
+        return (getSlots(request)[attributeName] as Map<String, *>)["value"];
     }
 
-    private fun getAttributes(request: Map<String, *>):Map<String, *> {
-        return getSession(request)["attributes"] as Map<String, *>;
+    private fun getSlots(request: Map<String, *>):Map<String, *> {
+        return getIntent(request)["slots"] as Map<String, *>;
     }
 
     private fun getSession(request: Map<String, *>): Map<String, *> {
