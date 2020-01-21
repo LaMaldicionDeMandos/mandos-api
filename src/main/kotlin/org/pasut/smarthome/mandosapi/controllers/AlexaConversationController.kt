@@ -29,69 +29,104 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
     @Throws(ExecutionException::class, InterruptedException::class)
     fun onPost(@RequestBody body: Map<String, *>, @RequestHeader headers: Map<String?, String?>?): ResponseEntity<String?>? {
         LOG.info("Entrando al post --> Body: {} --> headers: {}", body, headers)
-        LOG.info("Version: {}", body.get("version"));
+        LOG.info("Version: {}", body["version"]);
         val version = getRequestVersion(body);
         val requestType = getRequestType(body);
 
-        var result: MutableMap<String, Object> = mutableMapOf();
-        result.put("version", version as Object);
+        var builder = ResponseBuilder(version);
 
-        var response: MutableMap<String, Object> = mutableMapOf();
-        var speech: MutableMap<String, String> = mutableMapOf();
-        speech.put("type", "PlainText");
-
-        response.put("shouldEndSession", true as Object);
-        speech.put("text", "Mmm no entendí.");
-
-        if (requestType.equals("SessionEndedRequest")) {
-            speech.put("text", "Muy bien, te quiero adioos!");
-            response.put("shouldEndSession", true as Object);
+        if (requestType == "SessionEndedRequest") {
+            builder.text("Muy bien, te quiero adioos!");
         }
 
-        if (requestType.equals("LaunchRequest")) {
-            speech.put("text", "¿Que querés hacer?");
-            response.put("shouldEndSession", false as Object);
+        if (requestType == "LaunchRequest") {
+            builder.text("¿Que querés hacer?").shouldEnd(false);
         }
 
-        if (requestType.equals("IntentRequest")) {
-            if (getIntentName(body).equals("get_shopping_list")) {
-                speech.put("type", "SSML");
-                speech.put("ssml", showShoppingListProcessor.process());
-                response.put("shouldEndSession", true as Object);
-            }
-            if (getIntentName(body).equals("AMAZON.HelpIntent")) {
-                speech.put("text", "No se que decirte, yo tambien necesito ayuda.");
-                response.put("shouldEndSession", false as Object);
+        if (requestType == "IntentRequest") {
+            when (getIntentName(body)) {
+                "get_shopping_list" -> builder.ssml(showShoppingListProcessor.process());
+                "add_item" -> builder.text(buyItemProcessor.process(getItem(body)));
+                "AMAZON.HelpIntent" -> builder.text("No se que decirte, yo tambien necesito ayuda.").shouldEnd(false);
             }
         }
 
-        speech.put("playBehavior", "REPLACE_ENQUEUED");
+        return ResponseEntity.ok(JSONObject(builder.build()).toString());
+    }
 
-        response.put("outputSpeech", speech as Object);
+    private fun getItem(request: Map<String, *>):String {
+        return getAttribute(request, "item") as String;
+    }
 
-        result.put("response", response as Object);
+    private fun getAttribute(request: Map<String, *>, attributeName:String): Any? {
+        return getAttributes(request)[attributeName];
+    }
 
-        return ResponseEntity.ok(JSONObject(result).toString());
+    private fun getAttributes(request: Map<String, *>):Map<String, *> {
+        return getSession(request)["attributes"] as Map<String, *>;
+    }
+
+    private fun getSession(request: Map<String, *>): Map<String, *> {
+        return request["session"] as Map<String, *>;
     }
 
     private fun getRequest(request: Map<String, *>): Map<String, *> {
-        return request.get("request") as Map<String, *>;
+        return request["request"] as Map<String, *>;
     }
 
     private fun getRequestVersion(request: Map<String, *>):String {
-        return request.get("version").toString();
+        return request["version"].toString();
     }
 
     private fun getRequestType(request: Map<String, *>): String {
-        return getRequest(request).get("type").toString();
+        return getRequest(request)["type"].toString();
     }
 
     private fun getIntent(request: Map<String, *>):Map<String, String> {
-        return getRequest(request).get("intent") as Map<String, String>;
+        return getRequest(request)["intent"] as Map<String, String>;
     }
 
     private fun getIntentName(request: Map<String, *>):String {
-        return getIntent(request).get("name").toString();
+        return getIntent(request)["name"].toString();
     }
 
+}
+
+class ResponseBuilder {
+    private val result: MutableMap<String, Object> = mutableMapOf();
+    private val response: MutableMap<String, Object> = mutableMapOf();
+    private val speech: MutableMap<String, String> = mutableMapOf();
+
+    constructor(version:String) {
+        speech["type"] = "PlainText";
+        speech["text"] = "Mmm no entendí.";
+        speech["playBehavior"] = "REPLACE_ENQUEUED";
+
+        response["shouldEndSession"] = true as Object;
+
+        result["version"] = version as Object;
+    }
+
+    fun text(text: String): ResponseBuilder {
+        speech["type"] = "PlainText";
+        speech["text"] = text;
+        return this;
+    }
+
+    fun ssml(text: String): ResponseBuilder {
+        speech["type"] = "SSML";
+        speech["ssml"] = text;
+        return this;
+    }
+
+    fun shouldEnd(value: Boolean): ResponseBuilder {
+        response["shouldEndSession"] = value as Object;
+        return this;
+    }
+
+    fun build():Map<String, Object> {
+        response["outputSpeech"] = speech as Object;
+        result["response"] = response as Object;
+        return result;
+    }
 }
