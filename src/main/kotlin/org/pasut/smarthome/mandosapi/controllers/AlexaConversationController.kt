@@ -50,6 +50,7 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
                 "delete_item" -> builder.text(deleteItemProcessor.process(getItem(body)));
                 "clear_list" -> builder.text(clearShoppingListProcessor.process());
                 "AMAZON.HelpIntent" -> builder.text("No se que decirte, yo tambien necesito ayuda.").shouldEnd(false);
+                "AMAZON.CancelIntent" -> builder.text("Ok, acción cancelada.");
             }
         }
 
