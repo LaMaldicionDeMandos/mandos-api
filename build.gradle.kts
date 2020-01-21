@@ -29,6 +29,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-actuator")
 	implementation("com.google.actions:actions-on-google:1.8.0")
+	implementation("com.amazon.alexa:ask-sdk:2.27.1")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {

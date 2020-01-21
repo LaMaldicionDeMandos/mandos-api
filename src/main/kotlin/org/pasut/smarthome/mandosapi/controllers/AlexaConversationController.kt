@@ -1,6 +1,7 @@
 package org.pasut.smarthome.mandosapi.controllers
 
 import com.google.actions.api.*
+import com.sun.jndi.toolkit.url.Uri
 import org.json.JSONObject
 import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
 import org.pasut.smarthome.mandosapi.processors.ClearShoppingListProcessor
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
+import sun.net.util.URLUtil
+import java.net.URI
+import java.net.URL
 import java.util.concurrent.ExecutionException
 
 
@@ -27,9 +31,11 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
 
     @PostMapping("conversation/alexa")
     @Throws(ExecutionException::class, InterruptedException::class)
-    fun onPost(@RequestBody body: Map<String, *>, @RequestHeader headers: Map<String?, String?>?): ResponseEntity<String?>? {
+    fun onPost(@RequestBody body: Map<String, *>, @RequestHeader headers: Map<String, String>): ResponseEntity<String?> {
         LOG.info("Entrando al post --> Body: {} --> headers: {}", body, headers)
         LOG.info("Version: {}", body["version"]);
+
+        if (!verifyAlexaRequest(headers)) return ResponseEntity.badRequest().build();
         val version = getRequestVersion(body);
         val requestType = getRequestType(body);
 
@@ -61,6 +67,14 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
         }
 
         return ResponseEntity.ok(JSONObject(builder.build()).toString());
+    }
+
+    private fun verifyAlexaRequest(headers: Map<String, String>): Boolean {
+        val url: URL = URI.create(headers["signaturecertchainrrl"]).toURL()
+        return url.protocol.equals("https", true)
+                && url.host.equals("s3.amazonaws.com", true)
+                && url.path.startsWith("/echo.api/")
+                && url.port.equals(443)
     }
 
     private fun isNewUser(request: Map<String, *>): Boolean {
