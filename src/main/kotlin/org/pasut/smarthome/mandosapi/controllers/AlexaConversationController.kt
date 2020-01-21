@@ -40,7 +40,10 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
         }
 
         if (requestType == "LaunchRequest") {
-            builder.text("¿Que querés hacer?").shouldEnd(false);
+            if (isNewUser(body)) builder.text("Te doy la bienvenida, me dicen dDon Mandos, te explicaré algunas cosas que podes pedirme, " +
+                    "podes ver tu lista de compras, agregar nuevos items para comprar, eliminar de la lista de compras y limpiar la lista una vez hayas realizado las compras. " +
+                    "También podes pedir ayuda diciendo al palabra \"ayuda.\", ¿Que querés hacer ahora?").shouldEnd(false);
+            else builder.text("Hola, que alegría volver a escucharte. ¿Que querés hacer?")
         }
 
         if (requestType == "IntentRequest") {
@@ -49,12 +52,19 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
                 "add_item" -> builder.text(buyItemProcessor.process(getItem(body)));
                 "delete_item" -> builder.text(deleteItemProcessor.process(getItem(body)));
                 "clear_list" -> builder.text(clearShoppingListProcessor.process());
-                "AMAZON.HelpIntent" -> builder.text("No se que decirte, yo tambien necesito ayuda.").shouldEnd(false);
+                "AMAZON.HelpIntent" -> builder.text("Te voy a decir alguna frases que podes usar..." +
+                        "Decí \"Ver mis compras\" y te diré los items que agendaste. " +
+                        "Podes decir \"quiero comprar frutas, para agregar frutas a tu lista de compras. " +
+                        "También podes decir \"eliminá frutas\", para quitar las frutas de tu lista de compras.").shouldEnd(false);
                 "AMAZON.CancelIntent" -> builder.text("Ok, acción cancelada.");
             }
         }
 
         return ResponseEntity.ok(JSONObject(builder.build()).toString());
+    }
+
+    private fun isNewUser(request: Map<String, *>): Boolean {
+        return getSession(request).get("new") as Boolean;
     }
 
     private fun getItem(request: Map<String, *>):String {
