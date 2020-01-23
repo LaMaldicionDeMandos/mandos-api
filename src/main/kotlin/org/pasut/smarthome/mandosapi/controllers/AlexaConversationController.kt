@@ -35,7 +35,7 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
         LOG.info("Entrando al post --> Body: {} --> headers: {}", body, headers)
         LOG.info("Version: {}", body["version"]);
 
-        if (!verifyAlexaRequest(headers)) return ResponseEntity.badRequest().build();
+        //if (!verifyAlexaRequest(headers)) return ResponseEntity.badRequest().build();
         val version = getRequestVersion(body);
         val requestType = getRequestType(body);
 
