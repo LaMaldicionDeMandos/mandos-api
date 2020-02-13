@@ -85,4 +85,18 @@ class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProc
         LOG.info("clear shopping list end.")
         return actionResponse
     }
+
+    @ForIntent("last power on")
+    fun lastPowerOn(request: ActionRequest): ActionResponse? {
+        LOG.info("last power on start.")
+
+        val deviceName = request.getParameter("device").toString()
+        val response = "Voy a buscar a que hora se prendio " + deviceName;
+
+        val responseBuilder = getResponseBuilder(request).add(response).endConversation()
+        val actionResponse = responseBuilder.build()
+        LOG.info("Response: {}", actionResponse.toString())
+        LOG.info("buy item end.")
+        return actionResponse
+    }
 }
