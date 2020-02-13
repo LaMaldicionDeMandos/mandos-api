@@ -11,6 +11,6 @@ class DeviceMonitorService(private val restTemplate: RestTemplate,
 
     fun lastPowerOn(name: String): String {
         val date = restTemplate.getForObject(deviceUrl.plus("/event/on?name=${name}"), DevicePowerDate::class.java)
-        return date.toString();
+        return date?.date.toString();
     }
 }
