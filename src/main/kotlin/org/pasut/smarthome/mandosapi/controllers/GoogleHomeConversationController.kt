@@ -1,10 +1,7 @@
 package org.pasut.smarthome.mandosapi.controllers
 
 import com.google.actions.api.*
-import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
-import org.pasut.smarthome.mandosapi.processors.ClearShoppingListProcessor
-import org.pasut.smarthome.mandosapi.processors.DeleteItemProcessor
-import org.pasut.smarthome.mandosapi.processors.ShowShoppingListProcessor
+import org.pasut.smarthome.mandosapi.processors.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -20,7 +17,8 @@ import java.util.concurrent.ExecutionException
 class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProcessor,
                                        private val showShoppingListProcessor: ShowShoppingListProcessor,
                                        private val clearShoppingListProcessor: ClearShoppingListProcessor,
-                                       private val deleteItemProcessor: DeleteItemProcessor) : DialogflowApp() {
+                                       private val deleteItemProcessor: DeleteItemProcessor,
+                                       private val powerOnProcessor: LastPowerOnProcessor) : DialogflowApp() {
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(GoogleHomeConversationController::class.java)
     }
@@ -91,7 +89,7 @@ class GoogleHomeConversationController(private val buyItemProcessor: BuyItemProc
         LOG.info("last power on start.")
 
         val deviceName = request.getParameter("device").toString()
-        val response = "Voy a buscar a que hora se prendio " + deviceName;
+        val response = powerOnProcessor.process(deviceName)
 
         val responseBuilder = getResponseBuilder(request).add(response).endConversation()
         val actionResponse = responseBuilder.build()
