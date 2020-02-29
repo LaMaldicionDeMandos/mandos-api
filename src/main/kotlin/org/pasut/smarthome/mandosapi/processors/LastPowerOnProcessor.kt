@@ -13,7 +13,8 @@ class LastPowerOnProcessor(private val service:DeviceMonitorService) {
         val months = listOf("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
     }
     fun process(deviceName: String):String {
-        val _deviceName = deviceName.replace(" la "," ").replace(" de ", " ").replace(" el ", " ").replace(" del ", " ")
+        val _deviceName = deviceName.replace(" la "," ").replace(" de ", " ")
+                .replace(" el ", " ").replace(" del ", " ").replace(" dela ", " ")
         val devicePowerDate = service.lastPowerOn(_deviceName);
         return "${deviceName} se prendió por ultima vez ${processYear(toZonedDate(LocalDateTime.now()), toZonedDate(devicePowerDate))}"
     }
