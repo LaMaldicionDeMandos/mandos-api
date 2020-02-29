@@ -4,6 +4,8 @@ import org.pasut.smarthome.mandosapi.services.DeviceMonitorService
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.*
 
 @Component
 class LastPowerOnProcessor(private val service:DeviceMonitorService) {
@@ -13,7 +15,15 @@ class LastPowerOnProcessor(private val service:DeviceMonitorService) {
     fun process(deviceName: String):String {
         val _deviceName = deviceName.replace(" la "," ").replace(" de ", " ").replace(" el ", " ").replace(" del ", " ")
         val devicePowerDate = service.lastPowerOn(_deviceName);
-        return "${deviceName} se prendió por ultima vez ${processYear(LocalDateTime.now(), devicePowerDate.toInstant().atZone(ZoneId.of(ZoneId.SHORT_IDS["AGT"])).toLocalDateTime())}"
+        return "${deviceName} se prendió por ultima vez ${processYear(toZonedDate(LocalDateTime.now()), toZonedDate(devicePowerDate))}"
+    }
+
+    private fun toZonedDate(date: Date): LocalDateTime {
+        return date.toInstant().atZone(ZoneId.of(ZoneId.SHORT_IDS["AGT"])).toLocalDateTime()
+    }
+
+    private fun toZonedDate(date: LocalDateTime): LocalDateTime {
+        return date.toInstant(ZoneOffset.UTC).atZone(ZoneId.of(ZoneId.SHORT_IDS["AGT"])).toLocalDateTime();
     }
 
     private fun processYear(now: LocalDateTime, date:LocalDateTime): String {
