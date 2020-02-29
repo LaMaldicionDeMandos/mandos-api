@@ -2,10 +2,7 @@ package org.pasut.smarthome.mandosapi.controllers
 
 import com.google.actions.api.*
 import org.json.JSONObject
-import org.pasut.smarthome.mandosapi.processors.BuyItemProcessor
-import org.pasut.smarthome.mandosapi.processors.ClearShoppingListProcessor
-import org.pasut.smarthome.mandosapi.processors.DeleteItemProcessor
-import org.pasut.smarthome.mandosapi.processors.ShowShoppingListProcessor
+import org.pasut.smarthome.mandosapi.processors.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -22,7 +19,8 @@ import java.util.concurrent.ExecutionException
 class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor,
                                   private val showShoppingListProcessor: ShowShoppingListProcessor,
                                   private val clearShoppingListProcessor: ClearShoppingListProcessor,
-                                  private val deleteItemProcessor: DeleteItemProcessor) : DialogflowApp() {
+                                  private val deleteItemProcessor: DeleteItemProcessor,
+                                  private val lastPowerOnProcessor: LastPowerOnProcessor) : DialogflowApp() {
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(AlexaConversationController::class.java)
     }
@@ -55,6 +53,7 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
                 "add_item" -> builder.text(buyItemProcessor.process(getItem(body)));
                 "delete_item" -> builder.text(deleteItemProcessor.process(getItem(body)));
                 "clear_list" -> builder.text(clearShoppingListProcessor.process());
+                "last_power_on" -> builder.text(lastPowerOnProcessor.process(getDevice(body)));
                 "AMAZON.HelpIntent" -> builder.text("Te voy a decir alguna frases que podes usar..." +
                         "Decí \"Ver mis compras\" y te diré los items que agendaste. " +
                         "Podes decir \"quiero comprar frutas, para agregar frutas a tu lista de compras. " +
@@ -72,6 +71,10 @@ class AlexaConversationController(private val buyItemProcessor: BuyItemProcessor
 
     private fun getItem(request: Map<String, *>):String {
         return getSlot(request, "item") as String;
+    }
+
+    private fun getDevice(request: Map<String, *>):String {
+        return getSlot(request, "device") as String;
     }
 
     private fun getSlot(request: Map<String, *>, attributeName:String): Any? {
